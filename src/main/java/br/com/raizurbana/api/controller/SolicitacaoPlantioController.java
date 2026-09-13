@@ -17,6 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/solicitacoes")
+@CrossOrigin(origins = "*") // 👈 OBRIGATÓRIO para o navegador não bloquear
 public class SolicitacaoPlantioController {
 
     private final SolicitacaoPlantioService service;
