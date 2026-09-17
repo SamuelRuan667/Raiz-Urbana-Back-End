@@ -19,7 +19,8 @@ public class CorsConfig {
                 registry.addMapping("/api/**")
                         .allowedOrigins(
                                 "http://localhost:5173",
-                                "http://localhost:3000"
+                                "http://localhost:3000",
+                                "https://raiz-urbana-app-web.vercel.app"
                         )
                         .allowedMethods(
                                 "GET",

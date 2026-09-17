@@ -3,8 +3,11 @@ package br.com.raizurbana.api.controller;
 import br.com.raizurbana.api.dto.SolicitacaoPlantioRequest;
 import br.com.raizurbana.api.dto.SolicitacaoPlantioResponse;
 import br.com.raizurbana.api.model.SolicitacaoPlantio;
+import br.com.raizurbana.api.model.StatusSolicitacao;
 import br.com.raizurbana.api.service.SolicitacaoPlantioService;
+
 import jakarta.validation.Valid;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,11 +17,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import br.com.raizurbana.api.model.StatusSolicitacao;
 
 @RestController
 @RequestMapping("/api/solicitacoes")
-@CrossOrigin(origins = "*") // 👈 OBRIGATÓRIO para o navegador não bloquear
 public class SolicitacaoPlantioController {
 
     private final SolicitacaoPlantioService service;
@@ -28,7 +29,6 @@ public class SolicitacaoPlantioController {
         this.service = service;
     }
 
-    // CREATE
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SolicitacaoPlantioResponse> criarSolicitacao(
             @RequestPart("dados") @Valid SolicitacaoPlantioRequest dados,
@@ -42,21 +42,23 @@ public class SolicitacaoPlantioController {
                 .body(response);
     }
 
-    // READ - listar todas
     @GetMapping
     public ResponseEntity<List<SolicitacaoPlantioResponse>> listarTodas() {
-        return ResponseEntity.ok(service.listarTodas());
+
+        return ResponseEntity.ok(
+                service.listarTodas()
+        );
     }
 
-    // READ - buscar pelo ID
     @GetMapping("/{id}")
     public ResponseEntity<SolicitacaoPlantioResponse> buscarPorId(
             @PathVariable Long id) {
 
-        return ResponseEntity.ok(service.buscarPorId(id));
+        return ResponseEntity.ok(
+                service.buscarPorId(id)
+        );
     }
 
-    // READ - buscar pelo protocolo
     @GetMapping("/protocolo/{protocolo}")
     public ResponseEntity<SolicitacaoPlantioResponse> consultarPorProtocolo(
             @PathVariable String protocolo) {
@@ -69,7 +71,6 @@ public class SolicitacaoPlantioController {
         );
     }
 
-    // Buscar foto da solicitação
     @GetMapping("/protocolo/{protocolo}/foto")
     public ResponseEntity<byte[]> downloadFoto(
             @PathVariable String protocolo) {
@@ -91,22 +92,22 @@ public class SolicitacaoPlantioController {
                 .body(solicitacao.getFotoDados());
     }
 
-        @PatchMapping("/{id}/status")
-        public ResponseEntity<SolicitacaoPlantioResponse> atualizarStatus(
-        @PathVariable Long id,
-        @RequestParam StatusSolicitacao status) {
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<SolicitacaoPlantioResponse> atualizarStatus(
+            @PathVariable Long id,
+            @RequestParam StatusSolicitacao status) {
 
         return ResponseEntity.ok(
                 service.atualizarStatus(id, status)
         );
-        }
+    }
 
-        @DeleteMapping("/{id}")
-        public ResponseEntity<Void> excluirSolicitacao(
-        @PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirSolicitacao(
+            @PathVariable Long id) {
 
-    service.excluirSolicitacao(id);
+        service.excluirSolicitacao(id);
 
-    return ResponseEntity.noContent().build();
-        }
+        return ResponseEntity.noContent().build();
+    }
 }
