@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import br.com.raizurbana.api.model.StatusSolicitacao;
 
 @RestController
 @RequestMapping("/api/solicitacoes")
@@ -89,4 +90,23 @@ public class SolicitacaoPlantioController {
                 )
                 .body(solicitacao.getFotoDados());
     }
+
+        @PatchMapping("/{id}/status")
+        public ResponseEntity<SolicitacaoPlantioResponse> atualizarStatus(
+        @PathVariable Long id,
+        @RequestParam StatusSolicitacao status) {
+
+        return ResponseEntity.ok(
+                service.atualizarStatus(id, status)
+        );
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> excluirSolicitacao(
+        @PathVariable Long id) {
+
+    service.excluirSolicitacao(id);
+
+    return ResponseEntity.noContent().build();
+        }
 }
