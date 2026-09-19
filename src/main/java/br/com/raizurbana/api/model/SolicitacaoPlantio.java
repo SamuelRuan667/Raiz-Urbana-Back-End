@@ -2,6 +2,7 @@ package br.com.raizurbana.api.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +21,10 @@ public class SolicitacaoPlantio {
     @Column(nullable = false, unique = true, length = 20)
     private String protocolo;
 
-    // Dados Pessoais
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     @Column(name = "nome_completo", nullable = false, length = 150)
     private String nomeCompleto;
 
@@ -33,7 +37,6 @@ public class SolicitacaoPlantio {
     @Column(nullable = false, length = 120)
     private String email;
 
-    // Endereço do Plantio
     @Column(nullable = false, length = 10)
     private String cep;
 
@@ -55,13 +58,11 @@ public class SolicitacaoPlantio {
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
-    // Arquivo da Foto
     @Column(name = "foto_nome")
     private String fotoNome;
 
     @Column(name = "foto_tipo")
     private String fotoTipo;
-
 
     @Column(name = "foto_dados", nullable = false)
     private byte[] fotoDados;

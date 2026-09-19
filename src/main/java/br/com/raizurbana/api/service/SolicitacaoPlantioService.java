@@ -4,7 +4,9 @@ import br.com.raizurbana.api.dto.SolicitacaoPlantioRequest;
 import br.com.raizurbana.api.dto.SolicitacaoPlantioResponse;
 import br.com.raizurbana.api.model.SolicitacaoPlantio;
 import br.com.raizurbana.api.model.StatusSolicitacao;
+import br.com.raizurbana.api.model.Usuario;
 import br.com.raizurbana.api.repository.SolicitacaoPlantioRepository;
+import br.com.raizurbana.api.repository.UsuarioRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,14 @@ import java.util.List;
 public class SolicitacaoPlantioService {
 
     private final SolicitacaoPlantioRepository repository;
+    private final UsuarioRepository usuarioRepository;
 
     public SolicitacaoPlantioService(
-            SolicitacaoPlantioRepository repository) {
+            SolicitacaoPlantioRepository repository,
+            UsuarioRepository usuarioRepository) {
+
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Transactional
@@ -36,9 +42,19 @@ public class SolicitacaoPlantioService {
             );
         }
 
+        Usuario usuario = usuarioRepository
+                .findById(request.getUsuarioId())
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Usuário não encontrado com o id: "
+                                        + request.getUsuarioId()
+                        )
+                );
+
         SolicitacaoPlantio solicitacao =
                 SolicitacaoPlantio.builder()
                         .protocolo("TEMP-" + System.nanoTime())
+                        .usuario(usuario)
                         .nomeCompleto(request.getNomeCompleto())
                         .cpf(request.getCpf())
                         .telefone(request.getTelefone())
