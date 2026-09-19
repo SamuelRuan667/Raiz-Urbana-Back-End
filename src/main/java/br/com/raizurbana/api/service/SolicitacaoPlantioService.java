@@ -53,7 +53,7 @@ public class SolicitacaoPlantioService {
 
         SolicitacaoPlantio solicitacao =
                 SolicitacaoPlantio.builder()
-                        .protocolo("TEMP-" + System.nanoTime())
+                        .protocolo("T" + System.nanoTime())
                         .usuario(usuario)
                         .nomeCompleto(request.getNomeCompleto())
                         .cpf(request.getCpf())
