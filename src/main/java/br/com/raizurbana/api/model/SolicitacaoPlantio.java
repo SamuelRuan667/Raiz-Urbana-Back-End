@@ -1,7 +1,11 @@
 package br.com.raizurbana.api.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +18,16 @@ import java.time.LocalDateTime;
 @Builder
 public class SolicitacaoPlantio {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(nullable = false, unique = true, length = 30)
     private String protocolo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
     @Column(name = "nome_completo", nullable = false, length = 150)
     private String nomeCompleto;
