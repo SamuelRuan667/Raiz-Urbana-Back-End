@@ -52,9 +52,12 @@ public class CadastroRequest {
     @NotNull(message = "Tipo de usuário é obrigatório")
     private TipoUsuario tipo;
 
-    // Utilizados somente quando tipo = GESTOR
     private String instituicao;
 
     @Email(message = "E-mail institucional inválido")
     private String emailInstitucional;
+
+    private String bairroAtuacao;
+
+    private String codigoGestor;
 }

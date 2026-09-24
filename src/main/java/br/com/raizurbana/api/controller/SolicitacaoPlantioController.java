@@ -2,14 +2,11 @@ package br.com.raizurbana.api.controller;
 
 import br.com.raizurbana.api.dto.SolicitacaoPlantioRequest;
 import br.com.raizurbana.api.dto.SolicitacaoPlantioResponse;
-import br.com.raizurbana.api.model.SolicitacaoPlantio;
 import br.com.raizurbana.api.model.StatusSolicitacao;
 import br.com.raizurbana.api.service.SolicitacaoPlantioService;
 
-import jakarta.validation.Valid;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,27 +20,45 @@ import java.util.List;
 public class SolicitacaoPlantioController {
 
     private final SolicitacaoPlantioService service;
+    private final ObjectMapper objectMapper;
 
     public SolicitacaoPlantioController(
-            SolicitacaoPlantioService service) {
+            SolicitacaoPlantioService service,
+            ObjectMapper objectMapper
+    ) {
         this.service = service;
+        this.objectMapper = objectMapper;
     }
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SolicitacaoPlantioResponse> criarSolicitacao(
-            @RequestPart("dados") @Valid SolicitacaoPlantioRequest dados,
-            @RequestPart("foto") MultipartFile foto) throws IOException {
+    @PostMapping(
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<SolicitacaoPlantioResponse> criar(
+            @RequestPart("dados") String dadosJson,
+            @RequestPart(
+                    value = "foto",
+                    required = false
+            ) MultipartFile foto
+    ) throws IOException {
 
-        SolicitacaoPlantioResponse response =
-                service.criarSolicitacao(dados, foto);
+        SolicitacaoPlantioRequest request =
+                objectMapper.readValue(
+                        dadosJson,
+                        SolicitacaoPlantioRequest.class
+                );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(response);
+        return ResponseEntity.ok(
+                service.criar(
+                        request,
+                        foto
+                )
+        );
     }
 
     @GetMapping
-    public ResponseEntity<List<SolicitacaoPlantioResponse>> listarTodas() {
+    public ResponseEntity<
+            List<SolicitacaoPlantioResponse>
+            > listarTodas() {
 
         return ResponseEntity.ok(
                 service.listarTodas()
@@ -51,8 +66,10 @@ public class SolicitacaoPlantioController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SolicitacaoPlantioResponse> buscarPorId(
-            @PathVariable Long id) {
+    public ResponseEntity<SolicitacaoPlantioResponse>
+    buscarPorId(
+            @PathVariable Long id
+    ) {
 
         return ResponseEntity.ok(
                 service.buscarPorId(id)
@@ -60,54 +77,88 @@ public class SolicitacaoPlantioController {
     }
 
     @GetMapping("/protocolo/{protocolo}")
-    public ResponseEntity<SolicitacaoPlantioResponse> consultarPorProtocolo(
-            @PathVariable String protocolo) {
-
-        SolicitacaoPlantio solicitacao =
-                service.buscarPorProtocolo(protocolo);
+    public ResponseEntity<SolicitacaoPlantioResponse>
+    buscarPorProtocolo(
+            @PathVariable String protocolo
+    ) {
 
         return ResponseEntity.ok(
-                SolicitacaoPlantioResponse.fromEntity(solicitacao)
+                service.buscarPorProtocolo(
+                        protocolo
+                )
         );
     }
 
-    @GetMapping("/protocolo/{protocolo}/foto")
-    public ResponseEntity<byte[]> downloadFoto(
-            @PathVariable String protocolo) {
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<
+            List<SolicitacaoPlantioResponse>
+            > listarPorUsuario(
+            @PathVariable Long usuarioId
+    ) {
 
-        SolicitacaoPlantio solicitacao =
-                service.buscarPorProtocolo(protocolo);
+        return ResponseEntity.ok(
+                service.listarPorUsuario(
+                        usuarioId
+                )
+        );
+    }
 
-        return ResponseEntity.ok()
-                .header(
-                        HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" +
-                                solicitacao.getFotoNome() + "\""
+    @GetMapping("/gestor/{gestorId}")
+    public ResponseEntity<
+            List<SolicitacaoPlantioResponse>
+            > listarPorGestor(
+            @PathVariable Long gestorId
+    ) {
+
+        return ResponseEntity.ok(
+                service.listarPorGestor(
+                        gestorId
                 )
-                .contentType(
-                        MediaType.parseMediaType(
-                                solicitacao.getFotoTipo()
-                        )
-                )
-                .body(solicitacao.getFotoDados());
+        );
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<SolicitacaoPlantioResponse> atualizarStatus(
+    public ResponseEntity<SolicitacaoPlantioResponse>
+    atualizarStatus(
             @PathVariable Long id,
-            @RequestParam StatusSolicitacao status) {
+            @RequestParam StatusSolicitacao status
+    ) {
 
         return ResponseEntity.ok(
-                service.atualizarStatus(id, status)
+                service.atualizarStatus(
+                        id,
+                        status
+                )
         );
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirSolicitacao(
-            @PathVariable Long id) {
+    @GetMapping("/{id}/foto")
+public ResponseEntity<byte[]> buscarFoto(
+        @PathVariable Long id
+) {
 
-        service.excluirSolicitacao(id);
+    var solicitacao =
+            service.buscarEntidadePorId(id);
 
-        return ResponseEntity.noContent().build();
+    if (solicitacao.getFoto() == null ||
+            solicitacao.getFoto().length == 0) {
+
+        return ResponseEntity.notFound().build();
     }
+
+    String tipo =
+            solicitacao.getFotoTipo();
+
+    if (tipo == null || tipo.isBlank()) {
+        tipo = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+    }
+
+    return ResponseEntity.ok()
+            .contentType(
+                    MediaType.parseMediaType(tipo)
+            )
+            .body(
+                    solicitacao.getFoto()
+            );
+}
 }

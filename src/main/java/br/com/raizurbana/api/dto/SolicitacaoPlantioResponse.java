@@ -12,26 +12,87 @@ import java.time.LocalDateTime;
 public class SolicitacaoPlantioResponse {
 
     private Long id;
-    private String protocolo;
-    private String nomeCompleto;
-    private String email;
-    private String ruaAvenida;
-    private String bairro;
-    private StatusSolicitacao status;
-    private LocalDateTime dataSolicitacao;
-    private String mensagem;
+    private Long usuarioId;
 
-    public static SolicitacaoPlantioResponse fromEntity(SolicitacaoPlantio entity) {
+    private String protocolo;
+
+    private String nomeCompleto;
+    private String cpf;
+    private String telefone;
+    private String email;
+
+    private String cep;
+    private String bairro;
+    private String ruaAvenida;
+    private String numero;
+    private String pontoReferencia;
+
+    private String tipoLocal;
+    private String observacoes;
+
+    private boolean possuiFoto;
+
+    private StatusSolicitacao status;
+
+    private LocalDateTime dataSolicitacao;
+
+    public static SolicitacaoPlantioResponse fromEntity(
+            SolicitacaoPlantio entity
+    ) {
+
         return SolicitacaoPlantioResponse.builder()
                 .id(entity.getId())
-                .protocolo(entity.getProtocolo())
-                .nomeCompleto(entity.getNomeCompleto())
-                .email(entity.getEmail())
-                .ruaAvenida(entity.getRuaAvenida())
-                .bairro(entity.getBairro())
-                .status(entity.getStatus())
-                .dataSolicitacao(entity.getDataSolicitacao())
-                .mensagem("Solicitação de plantio enviada com sucesso!")
+                .usuarioId(
+                        entity.getUsuario() != null
+                                ? entity.getUsuario().getId()
+                                : null
+                )
+                .protocolo(
+                        entity.getProtocolo()
+                )
+                .nomeCompleto(
+                        entity.getNomeCompleto()
+                )
+                .cpf(
+                        entity.getCpf()
+                )
+                .telefone(
+                        entity.getTelefone()
+                )
+                .email(
+                        entity.getEmail()
+                )
+                .cep(
+                        entity.getCep()
+                )
+                .bairro(
+                        entity.getBairro()
+                )
+                .ruaAvenida(
+                        entity.getRuaAvenida()
+                )
+                .numero(
+                        entity.getNumero()
+                )
+                .pontoReferencia(
+                        entity.getPontoReferencia()
+                )
+                .tipoLocal(
+                        entity.getTipoLocal()
+                )
+                .observacoes(
+                        entity.getObservacoes()
+                )
+                .possuiFoto(
+                        entity.getFoto() != null &&
+                        entity.getFoto().length > 0
+                )
+                .status(
+                        entity.getStatus()
+                )
+                .dataSolicitacao(
+                        entity.getDataSolicitacao()
+                )
                 .build();
     }
 }

@@ -1,11 +1,7 @@
 package br.com.raizurbana.api.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -22,59 +18,60 @@ public class SolicitacaoPlantio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(unique = true)
     private String protocolo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @Column(name = "nome_completo", nullable = false, length = 150)
+    @Column(name = "nome_completo", nullable = false)
     private String nomeCompleto;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private String cpf;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false)
     private String telefone;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false, length = 15)
+    @Column(nullable = false)
     private String cep;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String bairro;
 
-    @Column(name = "rua_avenida", nullable = false, length = 200)
+    @Column(name = "rua_avenida", nullable = false)
     private String ruaAvenida;
 
-    @Column(length = 30)
     private String numero;
 
-    @Column(name = "ponto_referencia", length = 250)
+    @Column(name = "ponto_referencia")
     private String pontoReferencia;
 
-    @Column(name = "tipo_local", nullable = false, length = 100)
+    @Column(name = "tipo_local", nullable = false)
     private String tipoLocal;
 
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
-    @Column(name = "foto_nome", length = 255)
-    private String fotoNome;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "foto")
+    private byte[] foto;
 
-    @Column(name = "foto_tipo", length = 100)
+    @Column(name = "foto_tipo")
     private String fotoTipo;
 
-    @Column(name = "foto_dados", nullable = false)
-    private byte[] fotoDados;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false)
     private StatusSolicitacao status;
 
-    @Column(name = "data_solicitacao", nullable = false)
+    @Column(
+            name = "data_solicitacao",
+            nullable = false
+    )
     private LocalDateTime dataSolicitacao;
 }
