@@ -36,12 +36,17 @@ public class SolicitacaoPlantioResponse {
 
     private LocalDateTime dataSolicitacao;
 
+    // Data e horário da visita técnica agendada.
+    private LocalDateTime dataVisita;
+
     public static SolicitacaoPlantioResponse fromEntity(
             SolicitacaoPlantio entity
     ) {
 
         return SolicitacaoPlantioResponse.builder()
-                .id(entity.getId())
+                .id(
+                        entity.getId()
+                )
                 .usuarioId(
                         entity.getUsuario() != null
                                 ? entity.getUsuario().getId()
@@ -84,14 +89,17 @@ public class SolicitacaoPlantioResponse {
                         entity.getObservacoes()
                 )
                 .possuiFoto(
-                        entity.getFoto() != null &&
-                        entity.getFoto().length > 0
+                        entity.getFoto() != null
+                                && entity.getFoto().length > 0
                 )
                 .status(
                         entity.getStatus()
                 )
                 .dataSolicitacao(
                         entity.getDataSolicitacao()
+                )
+                .dataVisita(
+                        entity.getDataVisita()
                 )
                 .build();
     }

@@ -22,10 +22,16 @@ public class SolicitacaoPlantio {
     private String protocolo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(
+            name = "usuario_id",
+            nullable = false
+    )
     private Usuario usuario;
 
-    @Column(name = "nome_completo", nullable = false)
+    @Column(
+            name = "nome_completo",
+            nullable = false
+    )
     private String nomeCompleto;
 
     @Column(nullable = false)
@@ -43,7 +49,10 @@ public class SolicitacaoPlantio {
     @Column(nullable = false)
     private String bairro;
 
-    @Column(name = "rua_avenida", nullable = false)
+    @Column(
+            name = "rua_avenida",
+            nullable = false
+    )
     private String ruaAvenida;
 
     private String numero;
@@ -51,15 +60,19 @@ public class SolicitacaoPlantio {
     @Column(name = "ponto_referencia")
     private String pontoReferencia;
 
-    @Column(name = "tipo_local", nullable = false)
+    @Column(
+            name = "tipo_local",
+            nullable = false
+    )
     private String tipoLocal;
 
     @Column(columnDefinition = "TEXT")
     private String observacoes;
 
-    @Lob
-    @Basic(fetch = FetchType.LAZY)
-    @Column(name = "foto")
+    @Column(
+            name = "foto",
+            columnDefinition = "bytea"
+    )
     private byte[] foto;
 
     @Column(name = "foto_tipo")
@@ -74,4 +87,8 @@ public class SolicitacaoPlantio {
             nullable = false
     )
     private LocalDateTime dataSolicitacao;
+
+    // Data e horário da visita técnica.
+    @Column(name = "data_visita")
+    private LocalDateTime dataVisita;
 }

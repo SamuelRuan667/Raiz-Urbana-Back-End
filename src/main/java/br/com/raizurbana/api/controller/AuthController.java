@@ -3,6 +3,7 @@ package br.com.raizurbana.api.controller;
 import br.com.raizurbana.api.dto.CadastroRequest;
 import br.com.raizurbana.api.model.Usuario;
 import br.com.raizurbana.api.service.AuthService;
+import br.com.raizurbana.api.service.JwtService;
 
 import jakarta.validation.Valid;
 
@@ -20,9 +21,14 @@ import br.com.raizurbana.api.dto.LoginRequest;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtService jwtService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(
+            AuthService authService,
+            JwtService jwtService
+    ) {
         this.authService = authService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/cadastro")
@@ -53,12 +59,15 @@ public class AuthController {
             request.getSenha()
     );
 
+    String token = jwtService.gerarToken(usuario);
+
     Map<String, Object> resposta = new HashMap<>();
 
     resposta.put("id", usuario.getId());
     resposta.put("nomeCompleto", usuario.getNomeCompleto());
     resposta.put("email", usuario.getEmail());
     resposta.put("tipo", usuario.getTipo());
+    resposta.put("token", token);
     resposta.put("mensagem", "Login realizado com sucesso!");
 
     return ResponseEntity.ok(resposta);
