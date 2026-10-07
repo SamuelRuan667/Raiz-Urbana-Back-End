@@ -24,18 +24,17 @@ public class SolicitacaoPlantioService {
 
     private final SolicitacaoPlantioRepository repository;
     private final UsuarioRepository usuarioRepository;
+    private final CarteiraCapibaService carteiraCapibaService;
 
     public SolicitacaoPlantioService(
             SolicitacaoPlantioRepository repository,
-            UsuarioRepository usuarioRepository
+            UsuarioRepository usuarioRepository,
+            CarteiraCapibaService carteiraCapibaService
     ) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
+        this.carteiraCapibaService = carteiraCapibaService;
     }
-
-    // =========================================================
-    // CRIAR SOLICITAÇÃO
-    // =========================================================
 
     @Transactional
     public SolicitacaoPlantioResponse criar(
@@ -55,56 +54,24 @@ public class SolicitacaoPlantioService {
         SolicitacaoPlantio solicitacao =
                 SolicitacaoPlantio.builder()
                         .usuario(usuario)
-                        .nomeCompleto(
-                                request.getNomeCompleto()
-                        )
-                        .cpf(
-                                request.getCpf()
-                        )
-                        .telefone(
-                                request.getTelefone()
-                        )
-                        .email(
-                                request.getEmail()
-                        )
-                        .cep(
-                                request.getCep()
-                        )
-                        .bairro(
-                                request.getBairro()
-                        )
-                        .ruaAvenida(
-                                request.getRuaAvenida()
-                        )
-                        .numero(
-                                request.getNumero()
-                        )
-                        .pontoReferencia(
-                                request.getPontoReferencia()
-                        )
-                        .tipoLocal(
-                                request.getTipoLocal()
-                        )
-                        .observacoes(
-                                request.getObservacoes()
-                        )
-                        .status(
-                                StatusSolicitacao.PENDENTE
-                        )
-                        .dataSolicitacao(
-                                LocalDateTime.now()
-                        )
+                        .nomeCompleto(request.getNomeCompleto())
+                        .cpf(request.getCpf())
+                        .telefone(request.getTelefone())
+                        .email(request.getEmail())
+                        .cep(request.getCep())
+                        .bairro(request.getBairro())
+                        .ruaAvenida(request.getRuaAvenida())
+                        .numero(request.getNumero())
+                        .pontoReferencia(request.getPontoReferencia())
+                        .tipoLocal(request.getTipoLocal())
+                        .observacoes(request.getObservacoes())
+                        .status(StatusSolicitacao.PENDENTE)
+                        .dataSolicitacao(LocalDateTime.now())
                         .build();
 
         if (foto != null && !foto.isEmpty()) {
-
-            solicitacao.setFoto(
-                    foto.getBytes()
-            );
-
-            solicitacao.setFotoTipo(
-                    foto.getContentType()
-            );
+            solicitacao.setFoto(foto.getBytes());
+            solicitacao.setFotoTipo(foto.getContentType());
         }
 
         SolicitacaoPlantio salva =
@@ -112,7 +79,8 @@ public class SolicitacaoPlantioService {
 
         salva.setProtocolo(
                 String.format(
-                        "%06d",
+                        "%d%06d",
+                        salva.getDataSolicitacao().getYear(),
                         salva.getId()
                 )
         );
@@ -123,25 +91,15 @@ public class SolicitacaoPlantioService {
                 .fromEntity(salva);
     }
 
-    // =========================================================
-    // LISTAR TODAS
-    // =========================================================
-
     @Transactional(readOnly = true)
     public List<SolicitacaoPlantioResponse> listarTodas() {
 
         return repository
                 .findAll()
                 .stream()
-                .map(
-                        SolicitacaoPlantioResponse::fromEntity
-                )
+                .map(SolicitacaoPlantioResponse::fromEntity)
                 .toList();
     }
-
-    // =========================================================
-    // BUSCAR POR ID
-    // =========================================================
 
     @Transactional(readOnly = true)
     public SolicitacaoPlantioResponse buscarPorId(
@@ -160,10 +118,6 @@ public class SolicitacaoPlantioService {
                 .fromEntity(solicitacao);
     }
 
-    // =========================================================
-    // BUSCAR POR PROTOCOLO
-    // =========================================================
-
     @Transactional(readOnly = true)
     public ConsultaProtocoloResponse buscarPorProtocolo(
             String protocolo
@@ -181,36 +135,23 @@ public class SolicitacaoPlantioService {
                 .fromEntity(solicitacao);
     }
 
-    // =========================================================
-    // LISTAR SOLICITAÇÕES DE UM USUÁRIO
-    // =========================================================
-
     @Transactional(readOnly = true)
     public List<SolicitacaoPlantioResponse> listarPorUsuario(
             Long usuarioId
     ) {
 
         if (!usuarioRepository.existsById(usuarioId)) {
-
             throw new IllegalArgumentException(
                     "Usuário não encontrado."
             );
         }
 
         return repository
-                .findByUsuarioIdOrderByIdDesc(
-                        usuarioId
-                )
+                .findByUsuarioIdOrderByIdDesc(usuarioId)
                 .stream()
-                .map(
-                        SolicitacaoPlantioResponse::fromEntity
-                )
+                .map(SolicitacaoPlantioResponse::fromEntity)
                 .toList();
     }
-
-    // =========================================================
-    // LISTAR SOLICITAÇÕES DO GESTOR
-    // =========================================================
 
     @Transactional(readOnly = true)
     public List<SolicitacaoPlantioResponse> listarPorGestor(
@@ -233,9 +174,7 @@ public class SolicitacaoPlantioService {
             );
         }
 
-        // BOSS pode visualizar todas.
         if (gestor.getTipo() == TipoUsuario.BOSS) {
-
             return listarTodas();
         }
 
@@ -252,18 +191,9 @@ public class SolicitacaoPlantioService {
                         gestor.getBairroAtuacao()
                 )
                 .stream()
-                .map(
-                        SolicitacaoPlantioResponse::fromEntity
-                )
+                .map(SolicitacaoPlantioResponse::fromEntity)
                 .toList();
     }
-
-    // =========================================================
-    // VALIDAR ACESSO DO GESTOR AO BAIRRO
-    //
-    // GESTOR só pode administrar solicitações pertencentes
-    // ao seu bairro de atuação.
-    // =========================================================
 
     @Transactional(readOnly = true)
     public void validarAcessoGestorAoBairro(
@@ -280,7 +210,6 @@ public class SolicitacaoPlantioService {
                 );
 
         if (gestor.getTipo() != TipoUsuario.GESTOR) {
-
             throw new AccessDeniedException(
                     "O usuário autenticado não é um gestor."
             );
@@ -320,10 +249,6 @@ public class SolicitacaoPlantioService {
         }
     }
 
-    // =========================================================
-    // ATUALIZAR STATUS
-    // =========================================================
-
     @Transactional
     public SolicitacaoPlantioResponse atualizarStatus(
             Long id,
@@ -338,18 +263,24 @@ public class SolicitacaoPlantioService {
                                 )
                         );
 
+        StatusSolicitacao statusAnterior =
+                solicitacao.getStatus();
+
         solicitacao.setStatus(status);
 
         SolicitacaoPlantio atualizada =
                 repository.save(solicitacao);
 
+        if (status == StatusSolicitacao.CONCLUIDO
+                && statusAnterior != StatusSolicitacao.CONCLUIDO) {
+
+            carteiraCapibaService
+                    .creditarPlantioConcluido(atualizada);
+        }
+
         return SolicitacaoPlantioResponse
                 .fromEntity(atualizada);
     }
-
-    // =========================================================
-    // AGENDAR VISITA
-    // =========================================================
 
     @Transactional
     public SolicitacaoPlantioResponse agendarVisita(
@@ -386,10 +317,7 @@ public class SolicitacaoPlantioService {
             );
         }
 
-        solicitacao.setDataVisita(
-                dataVisita
-        );
-
+        solicitacao.setDataVisita(dataVisita);
         solicitacao.setStatus(
                 StatusSolicitacao.VISITA_AGENDADA
         );
@@ -400,11 +328,6 @@ public class SolicitacaoPlantioService {
         return SolicitacaoPlantioResponse
                 .fromEntity(atualizada);
     }
-
-    // =========================================================
-    // BUSCAR ENTIDADE
-    // Utilizado, por exemplo, para acessar a foto.
-    // =========================================================
 
     @Transactional(readOnly = true)
     public SolicitacaoPlantio buscarEntidadePorId(

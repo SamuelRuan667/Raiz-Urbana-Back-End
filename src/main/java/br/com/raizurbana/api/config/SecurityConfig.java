@@ -37,40 +37,20 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // ==========================================
-                        // AUTENTICAÇÃO - ROTAS PÚBLICAS
-                        // ==========================================
-
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/cadastro"
                         ).permitAll()
-
-
-                        // ==========================================
-                        // CONSULTA PÚBLICA POR PROTOCOLO
-                        // ==========================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/protocolo/**"
                         ).permitAll()
 
-
-                        // ==========================================
-                        // CRIAR SOLICITAÇÃO
-                        // SOMENTE USUARIO
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/solicitacoes"
                         ).hasRole("USUARIO")
-
-
-                        // ==========================================
-                        // SOLICITAÇÕES DO USUÁRIO
-                        // ==========================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -81,11 +61,6 @@ public class SecurityConfig {
                                 "BOSS"
                         )
 
-
-                        // ==========================================
-                        // ÁREA DO GESTOR
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/gestor/**"
@@ -93,11 +68,6 @@ public class SecurityConfig {
                                 "GESTOR",
                                 "BOSS"
                         )
-
-
-                        // ==========================================
-                        // ALTERAR STATUS
-                        // ==========================================
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
@@ -107,11 +77,6 @@ public class SecurityConfig {
                                 "BOSS"
                         )
 
-
-                        // ==========================================
-                        // AGENDAR VISITA TÉCNICA
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/solicitacoes/*/agendar-visita"
@@ -120,21 +85,10 @@ public class SecurityConfig {
                                 "BOSS"
                         )
 
-
-                        // ==========================================
-                        // LISTAR TODAS AS SOLICITAÇÕES
-                        // SOMENTE BOSS
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes"
                         ).hasRole("BOSS")
-
-
-                        // ==========================================
-                        // ACESSAR FOTO
-                        // ==========================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -145,11 +99,6 @@ public class SecurityConfig {
                                 "BOSS"
                         )
 
-
-                        // ==========================================
-                        // BUSCAR SOLICITAÇÃO POR ID
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/*"
@@ -159,62 +108,58 @@ public class SecurityConfig {
                                 "BOSS"
                         )
 
-
-                        // ==========================================
-                        // LISTAR TODOS OS USUÁRIOS
-                        // SOMENTE BOSS
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/usuarios"
                         ).hasRole("BOSS")
-
-
-                        // ==========================================
-                        // BUSCAR USUÁRIO POR ID
-                        // SOMENTE BOSS
-                        // ==========================================
 
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/usuarios/*"
                         ).hasRole("BOSS")
 
-
-                        // ==========================================
-                        // TRANSFORMAR USUÁRIO EM GESTOR
-                        // SOMENTE BOSS
-                        // ==========================================
-
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/usuarios/*/gestor"
                         ).hasRole("BOSS")
-
-
-                        // ==========================================
-                        // TRANSFORMAR GESTOR EM USUÁRIO
-                        // SOMENTE BOSS
-                        // ==========================================
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/usuarios/*/usuario"
                         ).hasRole("BOSS")
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/carteiras-capiba/minha"
+                        ).hasRole("USUARIO")
 
-                        // ==========================================
-                        // DEMAIS ENDPOINTS
-                        // ==========================================
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/carteiras-capiba/minha/movimentacoes"
+                        ).hasRole("USUARIO")
 
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/recompensas"
+                        ).hasRole("USUARIO")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/recompensas/meus-resgates"
+                        ).hasRole("USUARIO")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/recompensas/*/resgatar"
+                        ).hasRole("USUARIO")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/recompensas/*"
+                        ).hasRole("USUARIO")
+
+                        .anyRequest().authenticated()
                 )
-
-
-                // ==========================================
-                // FILTRO JWT
-                // ==========================================
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,
