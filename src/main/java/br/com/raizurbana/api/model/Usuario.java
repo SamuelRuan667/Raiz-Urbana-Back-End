@@ -1,3 +1,4 @@
+
 package br.com.raizurbana.api.model;
 
 import jakarta.persistence.*;
@@ -61,6 +62,15 @@ public class Usuario {
 
     @Column(name = "bairro_atuacao")
     private String bairroAtuacao;
+
+    @Column(name = "cnpj", length = 14, unique = true)
+    private String cnpj;
+
+    @Column(name = "razao_social")
+    private String razaoSocial;
+
+    @Column(name = "nome_fantasia")
+    private String nomeFantasia;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

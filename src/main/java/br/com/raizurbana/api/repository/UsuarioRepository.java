@@ -1,3 +1,4 @@
+
 package br.com.raizurbana.api.repository;
 
 import br.com.raizurbana.api.model.Usuario;
@@ -14,4 +15,6 @@ public interface UsuarioRepository
     boolean existsByEmail(String email);
 
     boolean existsByCpf(String cpf);
+
+    boolean existsByCnpj(String cnpj);
 }

@@ -1,10 +1,13 @@
+
 package br.com.raizurbana.api.dto;
 
 import br.com.raizurbana.api.model.TipoUsuario;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -52,12 +55,16 @@ public class CadastroRequest {
     @NotNull(message = "Tipo de usuário é obrigatório")
     private TipoUsuario tipo;
 
+    private String cnpj;
+
+    private String razaoSocial;
+
+    private String nomeFantasia;
+
     private String instituicao;
 
     @Email(message = "E-mail institucional inválido")
     private String emailInstitucional;
 
     private String bairroAtuacao;
-
-    private String codigoGestor;
 }

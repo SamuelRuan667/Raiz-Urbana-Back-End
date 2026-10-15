@@ -1,7 +1,9 @@
+
 package br.com.raizurbana.api.model;
 
 public enum TipoUsuario {
     USUARIO,
     GESTOR,
-    BOSS
+    BOSS,
+    EMPRESA_PARCEIRA
 }

@@ -1,3 +1,4 @@
+
 package br.com.raizurbana.api.dto;
 
 import br.com.raizurbana.api.model.TipoUsuario;
@@ -26,6 +27,9 @@ public class UsuarioResponse {
     private String instituicao;
     private String emailInstitucional;
     private String bairroAtuacao;
+    private String cnpj;
+    private String razaoSocial;
+    private String nomeFantasia;
     private LocalDateTime createdAt;
 
     public static UsuarioResponse fromEntity(
@@ -51,6 +55,9 @@ public class UsuarioResponse {
                 .bairroAtuacao(
                         usuario.getBairroAtuacao()
                 )
+                .cnpj(usuario.getCnpj())
+                .razaoSocial(usuario.getRazaoSocial())
+                .nomeFantasia(usuario.getNomeFantasia())
                 .createdAt(usuario.getCreatedAt())
                 .build();
     }

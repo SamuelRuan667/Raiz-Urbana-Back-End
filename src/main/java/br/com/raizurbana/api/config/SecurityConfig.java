@@ -1,3 +1,4 @@
+
 package br.com.raizurbana.api.config;
 
 import org.springframework.context.annotation.Bean;
@@ -110,6 +111,11 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.GET,
+                                "/api/usuarios/me"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
                                 "/api/usuarios"
                         ).hasRole("BOSS")
 
@@ -157,6 +163,20 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/recompensas/*"
                         ).hasRole("USUARIO")
+
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/propostas-parceria"
+                        ).hasRole("EMPRESA_PARCEIRA")
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/propostas-parceria/minhas"
+                        ).hasRole("EMPRESA_PARCEIRA")
+
+                        .requestMatchers(
+                                "/api/propostas-parceria/admin/**"
+                        ).hasRole("BOSS")
 
                         .anyRequest().authenticated()
                 )
