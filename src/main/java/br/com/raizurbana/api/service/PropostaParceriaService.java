@@ -35,12 +35,9 @@ public class PropostaParceriaService {
             Long usuarioId,
             PropostaParceriaRequest request
     ) {
-
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Usuário não encontrado."
-                        )
+                        new IllegalArgumentException("Usuário não encontrado.")
                 );
 
         if (usuario.getTipo() != TipoUsuario.EMPRESA_PARCEIRA) {
@@ -52,7 +49,7 @@ public class PropostaParceriaService {
         String cnpj = somenteNumeros(request.getCnpj());
 
         if (usuario.getCnpj() == null ||
-                !usuario.getCnpj().equals(cnpj)) {
+                !somenteNumeros(usuario.getCnpj()).equals(cnpj)) {
             throw new IllegalArgumentException(
                     "O CNPJ informado não corresponde à empresa autenticada."
             );
@@ -115,15 +112,10 @@ public class PropostaParceriaService {
     }
 
     @Transactional(readOnly = true)
-    public List<PropostaParceria> listarMinhasPropostas(
-            Long usuarioId
-    ) {
-
+    public List<PropostaParceria> listarMinhasPropostas(Long usuarioId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Usuário não encontrado."
-                        )
+                        new IllegalArgumentException("Usuário não encontrado.")
                 );
 
         if (usuario.getTipo() != TipoUsuario.EMPRESA_PARCEIRA) {
@@ -134,6 +126,97 @@ public class PropostaParceriaService {
 
         return propostaRepository
                 .findByUsuarioIdOrderByDataEnvioDesc(usuarioId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PropostaParceria> listarTodasPropostas(Long bossId) {
+        validarBoss(bossId);
+
+        return propostaRepository.findAllByOrderByDataEnvioDesc();
+    }
+
+    @Transactional(readOnly = true)
+    public PropostaParceria buscarPropostaPorId(Long bossId, Long propostaId) {
+        validarBoss(bossId);
+
+        return propostaRepository.findById(propostaId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Proposta de parceria não encontrada."
+                        )
+                );
+    }
+
+    @Transactional
+    public PropostaParceria aprovarProposta(Long bossId, Long propostaId) {
+        Usuario boss = validarBoss(bossId);
+
+        PropostaParceria proposta = buscarPropostaParaAnalise(propostaId);
+
+        proposta.setStatus("APROVADA");
+        proposta.setDataAnalise(OffsetDateTime.now(ZoneOffset.UTC));
+        proposta.setAnalisadoPor(boss);
+        proposta.setFeedback(null);
+
+        return propostaRepository.save(proposta);
+    }
+
+    @Transactional
+    public PropostaParceria rejeitarProposta(
+            Long bossId,
+            Long propostaId,
+            String feedback
+    ) {
+        Usuario boss = validarBoss(bossId);
+
+        if (feedback == null || feedback.isBlank()) {
+            throw new IllegalArgumentException(
+                    "O motivo da rejeição é obrigatório."
+            );
+        }
+
+        PropostaParceria proposta = buscarPropostaParaAnalise(propostaId);
+
+        proposta.setStatus("REJEITADA");
+        proposta.setDataAnalise(OffsetDateTime.now(ZoneOffset.UTC));
+        proposta.setAnalisadoPor(boss);
+        proposta.setFeedback(feedback.trim());
+
+        return propostaRepository.save(proposta);
+    }
+
+    private Usuario validarBoss(Long bossId) {
+        Usuario boss = usuarioRepository.findById(bossId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Usuário autenticado não encontrado."
+                        )
+                );
+
+        if (boss.getTipo() != TipoUsuario.BOSS) {
+            throw new IllegalArgumentException(
+                    "Somente o BOSS pode administrar propostas de parceria."
+            );
+        }
+
+        return boss;
+    }
+
+    private PropostaParceria buscarPropostaParaAnalise(Long propostaId) {
+        PropostaParceria proposta = propostaRepository.findById(propostaId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Proposta de parceria não encontrada."
+                        )
+                );
+
+        if (!"PENDENTE".equalsIgnoreCase(proposta.getStatus())) {
+            throw new IllegalArgumentException(
+                    "Esta proposta já foi analisada."
+            );
+        }
+
+        return proposta;
     }
 
     private String somenteNumeros(String valor) {

@@ -27,15 +27,12 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-
                 .cors(cors -> {})
-
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
                         )
                 )
-
                 .authorizeHttpRequests(auth -> auth
 
                         .requestMatchers(
@@ -56,35 +53,22 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/usuario/**"
-                        ).hasAnyRole(
-                                "USUARIO",
-                                "GESTOR",
-                                "BOSS"
-                        )
+                        ).hasAnyRole("USUARIO", "GESTOR", "BOSS")
 
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/gestor/**"
-                        ).hasAnyRole(
-                                "GESTOR",
-                                "BOSS"
-                        )
+                        ).hasAnyRole("GESTOR", "BOSS")
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/solicitacoes/*/status"
-                        ).hasAnyRole(
-                                "GESTOR",
-                                "BOSS"
-                        )
+                        ).hasAnyRole("GESTOR", "BOSS")
 
                         .requestMatchers(
                                 HttpMethod.PATCH,
                                 "/api/solicitacoes/*/agendar-visita"
-                        ).hasAnyRole(
-                                "GESTOR",
-                                "BOSS"
-                        )
+                        ).hasAnyRole("GESTOR", "BOSS")
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -94,20 +78,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/*/foto"
-                        ).hasAnyRole(
-                                "USUARIO",
-                                "GESTOR",
-                                "BOSS"
-                        )
+                        ).hasAnyRole("USUARIO", "GESTOR", "BOSS")
 
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/solicitacoes/*"
-                        ).hasAnyRole(
-                                "USUARIO",
-                                "GESTOR",
-                                "BOSS"
-                        )
+                        ).hasAnyRole("USUARIO", "GESTOR", "BOSS")
 
                         .requestMatchers(
                                 HttpMethod.GET,
@@ -175,12 +151,12 @@ public class SecurityConfig {
                         ).hasRole("EMPRESA_PARCEIRA")
 
                         .requestMatchers(
+                                "/api/propostas-parceria/admin",
                                 "/api/propostas-parceria/admin/**"
                         ).hasRole("BOSS")
 
                         .anyRequest().authenticated()
                 )
-
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
