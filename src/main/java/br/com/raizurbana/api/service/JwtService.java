@@ -1,9 +1,11 @@
+
 package br.com.raizurbana.api.service;
 
 import br.com.raizurbana.api.model.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -13,15 +15,14 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private static final String SECRET =
-            "RaizUrbana2026-ChaveJWT-Segura-Para-Desenvolvimento";
-
     private static final long EXPIRACAO =
             1000L * 60 * 60 * 8; // 8 horas
 
-    private SecretKey getChave() {
-        return Keys.hmacShaKeyFor(
-                SECRET.getBytes(StandardCharsets.UTF_8)
+    private final SecretKey chave;
+
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        this.chave = Keys.hmacShaKeyFor(
+                secret.getBytes(StandardCharsets.UTF_8)
         );
     }
 
@@ -35,14 +36,14 @@ public class JwtService {
                 .expiration(
                         new Date(System.currentTimeMillis() + EXPIRACAO)
                 )
-                .signWith(getChave())
+                .signWith(chave)
                 .compact();
     }
 
     public Claims extrairClaims(String token) {
 
         return Jwts.parser()
-                .verifyWith(getChave())
+                .verifyWith(chave)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
