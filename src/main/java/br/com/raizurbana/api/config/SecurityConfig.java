@@ -91,12 +91,22 @@ public class SecurityConfig {
                         ).authenticated()
 
                         .requestMatchers(
+                                HttpMethod.PUT,
+                                "/api/usuarios/me"
+                        ).authenticated()
+
+                        .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/usuarios"
                         ).hasRole("BOSS")
 
                         .requestMatchers(
                                 HttpMethod.GET,
+                                "/api/usuarios/*"
+                        ).hasRole("BOSS")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
                                 "/api/usuarios/*"
                         ).hasRole("BOSS")
 

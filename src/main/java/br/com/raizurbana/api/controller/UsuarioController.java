@@ -20,9 +20,7 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    public UsuarioController(
-            UsuarioService usuarioService
-    ) {
+    public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
 
@@ -32,12 +30,12 @@ public class UsuarioController {
     ) {
         Long usuarioId = obterUsuarioId(authentication);
 
-        UsuarioResponse usuario =
-                usuarioService.buscarPorId(usuarioId);
+        UsuarioResponse usuario = usuarioService.buscarPorId(usuarioId);
 
         MeuPerfilResponse perfil = new MeuPerfilResponse(
                 usuario.getId(),
                 usuario.getNomeCompleto(),
+                usuario.getCpf(),
                 usuario.getTelefone(),
                 usuario.getEmail(),
                 usuario.getCep(),
@@ -55,37 +53,31 @@ public class UsuarioController {
         return ResponseEntity.ok(perfil);
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<UsuarioResponse> atualizarMeuPerfil(
+            Authentication authentication,
+            @Valid @RequestBody AtualizarUsuarioRequest request
+    ) {
+        Long usuarioId = obterUsuarioId(authentication);
+
+        UsuarioResponse usuario = usuarioService.atualizar(
+                usuarioId,
+                request
+        );
+
+        return ResponseEntity.ok(usuario);
+    }
+
     @GetMapping
-    public ResponseEntity<List<UsuarioResponse>>
-    listarTodos() {
-
-        List<UsuarioResponse> usuarios =
-                usuarioService.listarTodos();
-
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<List<UsuarioResponse>> listarTodos() {
+        return ResponseEntity.ok(usuarioService.listarTodos());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponse> buscarPorId(
             @PathVariable Long id
     ) {
-
-        UsuarioResponse usuario =
-                usuarioService.buscarPorId(id);
-
-        return ResponseEntity.ok(usuario);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponse> atualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody AtualizarUsuarioRequest request
-    ) {
-
-        UsuarioResponse usuario =
-                usuarioService.atualizar(id, request);
-
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok(usuarioService.buscarPorId(id));
     }
 
     @PatchMapping("/{id}/gestor")
@@ -93,22 +85,18 @@ public class UsuarioController {
             @PathVariable Long id,
             @Valid @RequestBody DefinirGestorRequest request
     ) {
-
-        UsuarioResponse usuario =
-                usuarioService.definirComoGestor(id, request);
-
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok(
+                usuarioService.definirComoGestor(id, request)
+        );
     }
 
     @PatchMapping("/{id}/usuario")
     public ResponseEntity<UsuarioResponse> definirComoUsuario(
             @PathVariable Long id
     ) {
-
-        UsuarioResponse usuario =
-                usuarioService.definirComoUsuario(id);
-
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok(
+                usuarioService.definirComoUsuario(id)
+        );
     }
 
     private Long obterUsuarioId(Authentication authentication) {
@@ -116,8 +104,8 @@ public class UsuarioController {
                 !(authentication.getPrincipal() instanceof Long)) {
             throw new org.springframework.security.authentication
                     .AuthenticationCredentialsNotFoundException(
-                            "Usuário não autenticado."
-                    );
+                    "Usuário não autenticado."
+            );
         }
 
         return (Long) authentication.getPrincipal();
@@ -126,6 +114,7 @@ public class UsuarioController {
     public record MeuPerfilResponse(
             Long id,
             String nomeCompleto,
+            String cpf,
             String telefone,
             String email,
             String cep,

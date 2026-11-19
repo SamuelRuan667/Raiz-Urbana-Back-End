@@ -1,4 +1,3 @@
-
 package br.com.raizurbana.api.dto;
 
 import br.com.raizurbana.api.model.TipoUsuario;

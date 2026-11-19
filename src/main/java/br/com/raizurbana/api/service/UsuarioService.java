@@ -1,3 +1,4 @@
+
 package br.com.raizurbana.api.service;
 
 import br.com.raizurbana.api.dto.AtualizarUsuarioRequest;
@@ -17,19 +18,12 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
-    public UsuarioService(
-            UsuarioRepository usuarioRepository
-    ) {
+    public UsuarioService(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    // ==========================================
-    // LISTAR TODOS OS USUÁRIOS
-    // ==========================================
-
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listarTodos() {
-
         return usuarioRepository
                 .findAll()
                 .stream()
@@ -37,13 +31,8 @@ public class UsuarioService {
                 .toList();
     }
 
-    // ==========================================
-    // BUSCAR USUÁRIO POR ID
-    // ==========================================
-
     @Transactional(readOnly = true)
     public UsuarioResponse buscarPorId(Long id) {
-
         Usuario usuario = usuarioRepository
                 .findById(id)
                 .orElseThrow(() ->
@@ -55,16 +44,11 @@ public class UsuarioService {
         return UsuarioResponse.fromEntity(usuario);
     }
 
-    // ==========================================
-    // ATUALIZAR USUÁRIO
-    // ==========================================
-
     @Transactional
     public UsuarioResponse atualizar(
             Long id,
             AtualizarUsuarioRequest request
     ) {
-
         Usuario usuario = usuarioRepository
                 .findById(id)
                 .orElseThrow(() ->
@@ -73,26 +57,19 @@ public class UsuarioService {
                         )
                 );
 
-        String novoEmail =
-                request.getEmail()
-                        .trim()
-                        .toLowerCase();
+        String novoEmail = request.getEmail()
+                .trim()
+                .toLowerCase();
 
-        if (
-                !usuario.getEmail()
-                        .equalsIgnoreCase(novoEmail)
-                        &&
-                        usuarioRepository.existsByEmail(novoEmail)
-        ) {
-
+        if (!usuario.getEmail().equalsIgnoreCase(novoEmail)
+                && usuarioRepository.existsByEmail(novoEmail)) {
             throw new IllegalArgumentException(
                     "Este e-mail já está sendo utilizado."
             );
         }
 
-        String cepNormalizado =
-                request.getCep()
-                        .replaceAll("\\D", "");
+        String cepNormalizado = request.getCep()
+                .replaceAll("\\D", "");
 
         usuario.setNomeCompleto(
                 request.getNomeCompleto().trim()
@@ -103,7 +80,6 @@ public class UsuarioService {
         );
 
         usuario.setEmail(novoEmail);
-
         usuario.setCep(cepNormalizado);
 
         usuario.setNumero(
@@ -112,40 +88,23 @@ public class UsuarioService {
                         : request.getNumero().trim()
         );
 
-        usuario.setRua(
-                request.getRua().trim()
-        );
-
-        usuario.setBairro(
-                request.getBairro().trim()
-        );
-
-        usuario.setCidade(
-                request.getCidade().trim()
-        );
-
+        usuario.setRua(request.getRua().trim());
+        usuario.setBairro(request.getBairro().trim());
+        usuario.setCidade(request.getCidade().trim());
         usuario.setEstado(
-                request.getEstado()
-                        .trim()
-                        .toUpperCase()
+                request.getEstado().trim().toUpperCase()
         );
 
-        Usuario atualizado =
-                usuarioRepository.save(usuario);
+        Usuario atualizado = usuarioRepository.save(usuario);
 
         return UsuarioResponse.fromEntity(atualizado);
     }
-
-    // ==========================================
-    // TRANSFORMAR USUÁRIO EM GESTOR
-    // ==========================================
 
     @Transactional
     public UsuarioResponse definirComoGestor(
             Long usuarioId,
             DefinirGestorRequest request
     ) {
-
         Usuario usuario = usuarioRepository
                 .findById(usuarioId)
                 .orElseThrow(() ->
@@ -166,10 +125,9 @@ public class UsuarioService {
             );
         }
 
-        String bairroAtuacao =
-                request.getBairroAtuacao() == null
-                        ? ""
-                        : request.getBairroAtuacao().trim();
+        String bairroAtuacao = request.getBairroAtuacao() == null
+                ? ""
+                : request.getBairroAtuacao().trim();
 
         if (bairroAtuacao.isBlank()) {
             throw new IllegalArgumentException(
@@ -180,21 +138,13 @@ public class UsuarioService {
         usuario.setTipo(TipoUsuario.GESTOR);
         usuario.setBairroAtuacao(bairroAtuacao);
 
-        Usuario atualizado =
-                usuarioRepository.save(usuario);
-
-        return UsuarioResponse.fromEntity(atualizado);
+        return UsuarioResponse.fromEntity(
+                usuarioRepository.save(usuario)
+        );
     }
 
-    // ==========================================
-    // TRANSFORMAR GESTOR EM USUÁRIO
-    // ==========================================
-
     @Transactional
-    public UsuarioResponse definirComoUsuario(
-            Long usuarioId
-    ) {
-
+    public UsuarioResponse definirComoUsuario(Long usuarioId) {
         Usuario usuario = usuarioRepository
                 .findById(usuarioId)
                 .orElseThrow(() ->
@@ -216,14 +166,10 @@ public class UsuarioService {
         }
 
         usuario.setTipo(TipoUsuario.USUARIO);
-
-        // Ao deixar de ser gestor, não possui mais
-        // um bairro específico de atuação.
         usuario.setBairroAtuacao(null);
 
-        Usuario atualizado =
-                usuarioRepository.save(usuario);
-
-        return UsuarioResponse.fromEntity(atualizado);
+        return UsuarioResponse.fromEntity(
+                usuarioRepository.save(usuario)
+        );
     }
 }
