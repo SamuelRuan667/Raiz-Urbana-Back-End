@@ -2,8 +2,10 @@
 package br.com.raizurbana.api.service;
 
 import br.com.raizurbana.api.dto.CadastroRequest;
+import br.com.raizurbana.api.model.PasswordResetToken;
 import br.com.raizurbana.api.model.TipoUsuario;
 import br.com.raizurbana.api.model.Usuario;
+import br.com.raizurbana.api.repository.PasswordResetTokenRepository;
 import br.com.raizurbana.api.repository.UsuarioRepository;
 import br.com.raizurbana.api.util.CpfValidator;
 
@@ -11,21 +13,35 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.HexFormat;
 import java.util.Locale;
 
 @Service
 public class AuthService {
 
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private final UsuarioRepository usuarioRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public AuthService(
             UsuarioRepository usuarioRepository,
-            PasswordEncoder passwordEncoder
+            PasswordResetTokenRepository passwordResetTokenRepository,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService
     ) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -169,6 +185,114 @@ public class AuthService {
         return usuario;
     }
 
+    @Transactional
+    public void solicitarRecuperacaoSenha(String email) {
+
+        if (email == null || email.isBlank()) {
+            return;
+        }
+
+        String emailNormalizado =
+                email.trim().toLowerCase(Locale.ROOT);
+
+        usuarioRepository.findByEmail(emailNormalizado)
+                .ifPresent(usuario -> {
+
+                    String token = gerarTokenSeguro();
+                    String tokenHash = calcularHash(token);
+
+                    passwordResetTokenRepository.deleteByUsuarioId(
+                            usuario.getId()
+                    );
+
+                    PasswordResetToken resetToken =
+                            PasswordResetToken.builder()
+                                    .usuario(usuario)
+                                    .tokenHash(tokenHash)
+                                    .expiraEm(LocalDateTime.now().plusMinutes(30))
+                                    .criadoEm(LocalDateTime.now())
+                                    .build();
+
+                    passwordResetTokenRepository.save(resetToken);
+
+                    emailService.enviarEmailRecuperacao(
+                            usuario.getEmail(),
+                            token
+                    );
+                });
+    }
+
+    @Transactional
+    public void redefinirSenha(String token, String novaSenha) {
+
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Token inválido ou expirado."
+            );
+        }
+
+        String tokenHash = calcularHash(token);
+
+        PasswordResetToken resetToken =
+                passwordResetTokenRepository
+                        .findByTokenHashAndUsadoEmIsNull(tokenHash)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Token inválido ou expirado."
+                                )
+                        );
+
+        LocalDateTime agora = LocalDateTime.now();
+
+        if (!resetToken.getExpiraEm().isAfter(agora)) {
+            throw new IllegalArgumentException(
+                    "Token inválido ou expirado."
+            );
+        }
+
+        Usuario usuario = resetToken.getUsuario();
+
+        usuario.setSenhaHash(
+                passwordEncoder.encode(novaSenha)
+        );
+
+        resetToken.setUsadoEm(agora);
+
+        usuarioRepository.save(usuario);
+        passwordResetTokenRepository.save(resetToken);
+    }
+
+    private String gerarTokenSeguro() {
+
+        byte[] bytes = new byte[32];
+
+        SECURE_RANDOM.nextBytes(bytes);
+
+        return Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString(bytes);
+    }
+
+    private String calcularHash(String token) {
+
+        try {
+            MessageDigest digest =
+                    MessageDigest.getInstance("SHA-256");
+
+            byte[] hash = digest.digest(
+                    token.getBytes(StandardCharsets.UTF_8)
+            );
+
+            return HexFormat.of().formatHex(hash);
+
+        } catch (NoSuchAlgorithmException exception) {
+            throw new IllegalStateException(
+                    "Não foi possível processar o token de recuperação.",
+                    exception
+            );
+        }
+    }
+
     private boolean validarCnpj(String cnpj) {
 
         if (cnpj == null || !cnpj.matches("\\d{14}")) {
@@ -197,7 +321,7 @@ public class AuthService {
                 Character.getNumericValue(cnpj.charAt(12))
                 &&
                 segundoDigito ==
-                Character.getNumericValue(cnpj.charAt(13));
+                        Character.getNumericValue(cnpj.charAt(13));
     }
 
     private int calcularDigitoCnpj(

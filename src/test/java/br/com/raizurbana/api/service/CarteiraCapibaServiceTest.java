@@ -46,12 +46,21 @@ class CarteiraCapibaServiceTest {
                         .build();
 
         when(movimentacaoRepository
-                .existsBySolicitacaoIdAndTipo(10L, "ENTRADA"))
+                .existsBySolicitacaoIdAndDescricao(
+                        10L,
+                        "Recompensa por plantio concluído"
+                ))
                 .thenReturn(true);
 
         assertDoesNotThrow(
                 () -> service.creditarPlantioConcluido(solicitacao)
         );
+
+        verify(movimentacaoRepository)
+                .existsBySolicitacaoIdAndDescricao(
+                        10L,
+                        "Recompensa por plantio concluído"
+                );
 
         verify(carteiraRepository, never()).save(any());
         verify(movimentacaoRepository, never()).save(any());

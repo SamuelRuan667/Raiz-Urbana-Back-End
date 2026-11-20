@@ -18,4 +18,9 @@ public interface MovimentacaoCapibaRepository
             Long solicitacaoId,
             String tipo
     );
+
+    boolean existsBySolicitacaoIdAndDescricao(
+            Long solicitacaoId,
+            String descricao
+    );
 }

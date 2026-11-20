@@ -1,6 +1,10 @@
+
 package br.com.raizurbana.api.controller;
 
 import br.com.raizurbana.api.dto.CadastroRequest;
+import br.com.raizurbana.api.dto.LoginRequest;
+import br.com.raizurbana.api.dto.RecuperarSenhaRequest;
+import br.com.raizurbana.api.dto.RedefinirSenhaRequest;
 import br.com.raizurbana.api.model.Usuario;
 import br.com.raizurbana.api.service.AuthService;
 import br.com.raizurbana.api.service.JwtService;
@@ -13,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import br.com.raizurbana.api.dto.LoginRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -52,24 +54,54 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
-        @Valid @RequestBody LoginRequest request) {
+            @Valid @RequestBody LoginRequest request) {
 
-    Usuario usuario = authService.login(
-            request.getEmail(),
-            request.getSenha()
-    );
+        Usuario usuario = authService.login(
+                request.getEmail(),
+                request.getSenha()
+        );
 
-    String token = jwtService.gerarToken(usuario);
+        String token = jwtService.gerarToken(usuario);
 
-    Map<String, Object> resposta = new HashMap<>();
+        Map<String, Object> resposta = new HashMap<>();
 
-    resposta.put("id", usuario.getId());
-    resposta.put("nomeCompleto", usuario.getNomeCompleto());
-    resposta.put("email", usuario.getEmail());
-    resposta.put("tipo", usuario.getTipo());
-    resposta.put("token", token);
-    resposta.put("mensagem", "Login realizado com sucesso!");
+        resposta.put("id", usuario.getId());
+        resposta.put("nomeCompleto", usuario.getNomeCompleto());
+        resposta.put("email", usuario.getEmail());
+        resposta.put("tipo", usuario.getTipo());
+        resposta.put("token", token);
+        resposta.put("mensagem", "Login realizado com sucesso!");
 
-    return ResponseEntity.ok(resposta);
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/recuperar-senha")
+    public ResponseEntity<Map<String, String>> recuperarSenha(
+            @Valid @RequestBody RecuperarSenhaRequest request) {
+
+        authService.solicitarRecuperacaoSenha(request.getEmail());
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put(
+                "mensagem",
+                "Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha."
+        );
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<Map<String, String>> redefinirSenha(
+            @Valid @RequestBody RedefinirSenhaRequest request) {
+
+        authService.redefinirSenha(
+                request.getToken(),
+                request.getNovaSenha()
+        );
+
+        Map<String, String> resposta = new HashMap<>();
+        resposta.put("mensagem", "Senha redefinida com sucesso!");
+
+        return ResponseEntity.ok(resposta);
     }
 }

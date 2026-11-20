@@ -18,7 +18,13 @@ import java.util.List;
 @Service
 public class CarteiraCapibaService {
 
-    private static final int RECOMPENSA_PLANTIO_CONCLUIDO = 20;
+    private static final int RECOMPENSA_PLANTIO = 20;
+
+    private static final String DESCRICAO_APROVACAO =
+            "Recompensa por solicitação aprovada";
+
+    private static final String DESCRICAO_CONCLUSAO =
+            "Recompensa por plantio concluído";
 
     private final CarteiraCapibaRepository carteiraRepository;
     private final MovimentacaoCapibaRepository movimentacaoRepository;
@@ -35,12 +41,8 @@ public class CarteiraCapibaService {
     }
 
     @Transactional(readOnly = true)
-    public CarteiraCapibaResponse buscarPorUsuario(
-            Long usuarioId
-    ) {
-
+    public CarteiraCapibaResponse buscarPorUsuario(Long usuarioId) {
         CarteiraCapiba carteira = buscarCarteira(usuarioId);
-
         return CarteiraCapibaResponse.fromEntity(carteira);
     }
 
@@ -48,32 +50,35 @@ public class CarteiraCapibaService {
     public List<MovimentacaoCapibaResponse> listarMovimentacoes(
             Long usuarioId
     ) {
-
         CarteiraCapiba carteira = buscarCarteira(usuarioId);
 
         return movimentacaoRepository
-                .findByCarteiraIdOrderByCreatedAtDesc(
-                        carteira.getId()
-                )
+                .findByCarteiraIdOrderByCreatedAtDesc(carteira.getId())
                 .stream()
                 .map(MovimentacaoCapibaResponse::fromEntity)
                 .toList();
     }
 
     @Transactional
-    public void creditarPlantioConcluido(
-            SolicitacaoPlantio solicitacao
-    ) {
+    public void creditarPlantioAprovado(SolicitacaoPlantio solicitacao) {
+        creditarRecompensa(solicitacao, DESCRICAO_APROVACAO);
+    }
 
+    @Transactional
+    public void creditarPlantioConcluido(SolicitacaoPlantio solicitacao) {
+        creditarRecompensa(solicitacao, DESCRICAO_CONCLUSAO);
+    }
+
+    private void creditarRecompensa(
+            SolicitacaoPlantio solicitacao,
+            String descricao
+    ) {
         if (solicitacao == null || solicitacao.getId() == null) {
-            throw new IllegalArgumentException(
-                    "Solicitação inválida."
-            );
+            throw new IllegalArgumentException("Solicitação inválida.");
         }
 
         if (solicitacao.getUsuario() == null
                 || solicitacao.getUsuario().getId() == null) {
-
             throw new IllegalArgumentException(
                     "A solicitação não possui usuário."
             );
@@ -81,24 +86,21 @@ public class CarteiraCapibaService {
 
         boolean jaCreditado =
                 movimentacaoRepository
-                        .existsBySolicitacaoIdAndTipo(
+                        .existsBySolicitacaoIdAndDescricao(
                                 solicitacao.getId(),
-                                "ENTRADA"
+                                descricao
                         );
 
         if (jaCreditado) {
             return;
         }
 
-        Long usuarioId =
-                solicitacao.getUsuario().getId();
+        Long usuarioId = solicitacao.getUsuario().getId();
 
-        CarteiraCapiba carteira =
-                buscarOuCriarCarteira(usuarioId);
+        CarteiraCapiba carteira = buscarOuCriarCarteira(usuarioId);
 
         carteira.setSaldo(
-                carteira.getSaldo()
-                        + RECOMPENSA_PLANTIO_CONCLUIDO
+                carteira.getSaldo() + RECOMPENSA_PLANTIO
         );
 
         carteiraRepository.save(carteira);
@@ -107,26 +109,17 @@ public class CarteiraCapibaService {
                 MovimentacaoCapiba.builder()
                         .carteira(carteira)
                         .tipo("ENTRADA")
-                        .quantidade(
-                                RECOMPENSA_PLANTIO_CONCLUIDO
-                        )
-                        .descricao(
-                                "Recompensa por plantio concluído"
-                        )
+                        .quantidade(RECOMPENSA_PLANTIO)
+                        .descricao(descricao)
                         .solicitacao(solicitacao)
                         .build();
 
         movimentacaoRepository.save(movimentacao);
     }
 
-    private CarteiraCapiba buscarCarteira(
-            Long usuarioId
-    ) {
-
+    private CarteiraCapiba buscarCarteira(Long usuarioId) {
         if (!usuarioRepository.existsById(usuarioId)) {
-            throw new IllegalArgumentException(
-                    "Usuário não encontrado."
-            );
+            throw new IllegalArgumentException("Usuário não encontrado.");
         }
 
         return carteiraRepository
@@ -138,14 +131,10 @@ public class CarteiraCapibaService {
                 );
     }
 
-    private CarteiraCapiba buscarOuCriarCarteira(
-            Long usuarioId
-    ) {
-
+    private CarteiraCapiba buscarOuCriarCarteira(Long usuarioId) {
         return carteiraRepository
                 .findByUsuarioId(usuarioId)
                 .orElseGet(() -> {
-
                     Usuario usuario =
                             usuarioRepository
                                     .findById(usuarioId)
@@ -161,9 +150,7 @@ public class CarteiraCapibaService {
                                     .saldo(0)
                                     .build();
 
-                    return carteiraRepository.save(
-                            carteira
-                    );
+                    return carteiraRepository.save(carteira);
                 });
     }
 }

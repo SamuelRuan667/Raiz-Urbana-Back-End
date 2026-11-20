@@ -1,3 +1,4 @@
+
 package br.com.raizurbana.api.service;
 
 import br.com.raizurbana.api.dto.ConsultaProtocoloResponse;
@@ -87,8 +88,7 @@ public class SolicitacaoPlantioService {
 
         salva = repository.save(salva);
 
-        return SolicitacaoPlantioResponse
-                .fromEntity(salva);
+        return SolicitacaoPlantioResponse.fromEntity(salva);
     }
 
     @Transactional(readOnly = true)
@@ -102,9 +102,7 @@ public class SolicitacaoPlantioService {
     }
 
     @Transactional(readOnly = true)
-    public SolicitacaoPlantioResponse buscarPorId(
-            Long id
-    ) {
+    public SolicitacaoPlantioResponse buscarPorId(Long id) {
 
         SolicitacaoPlantio solicitacao =
                 repository.findById(id)
@@ -114,8 +112,7 @@ public class SolicitacaoPlantioService {
                                 )
                         );
 
-        return SolicitacaoPlantioResponse
-                .fromEntity(solicitacao);
+        return SolicitacaoPlantioResponse.fromEntity(solicitacao);
     }
 
     @Transactional(readOnly = true)
@@ -131,8 +128,7 @@ public class SolicitacaoPlantioService {
                                 )
                         );
 
-        return ConsultaProtocoloResponse
-                .fromEntity(solicitacao);
+        return ConsultaProtocoloResponse.fromEntity(solicitacao);
     }
 
     @Transactional(readOnly = true)
@@ -255,6 +251,12 @@ public class SolicitacaoPlantioService {
             StatusSolicitacao status
     ) {
 
+        if (status == null) {
+            throw new IllegalArgumentException(
+                    "O status é obrigatório."
+            );
+        }
+
         SolicitacaoPlantio solicitacao =
                 repository.findById(id)
                         .orElseThrow(() ->
@@ -271,6 +273,13 @@ public class SolicitacaoPlantioService {
         SolicitacaoPlantio atualizada =
                 repository.save(solicitacao);
 
+        if (status == StatusSolicitacao.APROVADO
+                && statusAnterior != StatusSolicitacao.APROVADO) {
+
+            carteiraCapibaService
+                    .creditarPlantioAprovado(atualizada);
+        }
+
         if (status == StatusSolicitacao.CONCLUIDO
                 && statusAnterior != StatusSolicitacao.CONCLUIDO) {
 
@@ -278,8 +287,7 @@ public class SolicitacaoPlantioService {
                     .creditarPlantioConcluido(atualizada);
         }
 
-        return SolicitacaoPlantioResponse
-                .fromEntity(atualizada);
+        return SolicitacaoPlantioResponse.fromEntity(atualizada);
     }
 
     @Transactional
@@ -325,14 +333,11 @@ public class SolicitacaoPlantioService {
         SolicitacaoPlantio atualizada =
                 repository.save(solicitacao);
 
-        return SolicitacaoPlantioResponse
-                .fromEntity(atualizada);
+        return SolicitacaoPlantioResponse.fromEntity(atualizada);
     }
 
     @Transactional(readOnly = true)
-    public SolicitacaoPlantio buscarEntidadePorId(
-            Long id
-    ) {
+    public SolicitacaoPlantio buscarEntidadePorId(Long id) {
 
         return repository.findById(id)
                 .orElseThrow(() ->

@@ -37,7 +37,9 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 "/api/auth/login",
-                                "/api/auth/cadastro"
+                                "/api/auth/cadastro",
+                                "/api/auth/recuperar-senha",
+                                "/api/auth/redefinir-senha"
                         ).permitAll()
 
                         .requestMatchers(
